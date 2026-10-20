@@ -1,0 +1,100 @@
+{
+  "stats": {
+    "suites": 1,
+    "tests": 1,
+    "passes": 1,
+    "pending": 0,
+    "failures": 0,
+    "start": "2026-10-18T08:24:29.567Z",
+    "end": "2026-10-18T08:25:00.888Z",
+    "duration": 31321,
+    "testsRegistered": 1,
+    "passPercent": 100,
+    "pendingPercent": 0,
+    "other": 0,
+    "hasOther": false,
+    "skipped": 0,
+    "hasSkipped": false
+  },
+  "results": [
+    {
+      "uuid": "9b59f3a1-47f8-4464-82e3-a9c4e944469e",
+      "title": "",
+      "fullFile": "C:\\Users\\budim\\Videos\\Mini Boot Camp\\Mini\\Budiman_sesi_9\\test\\login.js",
+      "file": "\\test\\login.js",
+      "beforeHooks": [],
+      "afterHooks": [],
+      "tests": [],
+      "suites": [
+        {
+          "uuid": "fe3ff8ad-882e-4af0-9626-94e42dfce606",
+          "title": "Belajar Bareng",
+          "fullFile": "C:\\Users\\budim\\Videos\\Mini Boot Camp\\Mini\\Budiman_sesi_9\\test\\login.js",
+          "file": "\\test\\login.js",
+          "beforeHooks": [],
+          "afterHooks": [],
+          "tests": [
+            {
+              "title": "Should login and display List Users",
+              "fullTitle": "Belajar Bareng Should login and display List Users",
+              "timedOut": false,
+              "duration": 31315,
+              "state": "passed",
+              "speed": "slow",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "this.timeout(90000); // Set timeout to 90 seconds\n// Handle popup password manager\nlet options = new chrome.Options();\noptions.addArguments(\"--disable-features=PasswordLeakDetection\");\noptions.setUserPreferences({\n    \"credentials_enable_service\": false,\n    \"profile.password_manager_enabled\": false,\n    \"profile.password_manager_leak_detection\": false\n});\nlet driver = await new Builder()\n    .forBrowser(\"chrome\")\n    .setChromeOptions(options)\n    .build();\nawait driver.manage().window().maximize();\nawait driver.get(\"https://belajar-bareng.onrender.com\");\nawait driver.sleep(10000);\nlet usernameInput = await driver.findElement(\n    By.css('[data-testid=\"username-input\"]')\n);\nlet passwordInput = await driver.findElement(\n    By.css('[data-testid=\"password-input\"]')\n);\nlet loginButton = await driver.findElement(\n    By.css('[data-testid=\"login-button\"]')\n);\nawait usernameInput.sendKeys(\"admin\");\nawait passwordInput.sendKeys(\"admin\");\nawait loginButton.click();\n// Assert 1: Ambil List User\nlet Text = await driver.wait(\n    until.elementLocated(\n        By.xpath('//h2[text()=\"List Users\"]')\n    ),\n    10000\n)\nassert.strictEqual(\n    await driver.findElement(\n        By.xpath('//h2[text()=\"List Users\"]')\n    ).isDisplayed(),\n    true\n);\n// Assert 2: Nyocokin Tittle\nlet text = await driver.findElement(\n    By.xpath('//h2[text()=\"List Users\"]')\n);\nassert.strictEqual(await text.getText(), \"List Users\");\nawait driver.sleep(3000);\nlet addUser = await driver.findElement(\n    By.css('[data-testid=\"add-button\"]')\n);\n    await addUser.click();\n// Assert 2: Nyocokin Tittle\nlet contains = await driver.findElement(\n    By.css('.container h2')\n);\nassert.strictEqual(await contains.getText(), \"Add Users\");\nlet usernameAdd = await driver.findElement(\n    By.css('[data-testid=\"username-input\"]')\n);\nlet ageInput = await driver.findElement(\n    By.css('[data-testid=\"age-input\"]')\n);\nlet submitButton = await driver.findElement(\n    By.css('[data-testid=\"submit-button\"]')\n);\nconst userBaru = \"TestA\";\nawait usernameAdd.sendKeys(userBaru);\nawait ageInput.sendKeys(\"99\");\nawait submitButton.click();\n// await driver.sleep(10000);\n// Assert 2: Nyocokin Nama\nlet toast = await driver.wait(\n    until.elementLocated(By.css('[data-testid=\"toast-content\"]')\n),\n10000\n    );\nawait driver.wait(until.elementIsVisible(toast), 20000);\n// Cek 1: toast tampil\nassert.strictEqual(await toast.isDisplayed(), true);\n// Cek 2: isi toast sesuai nama\nassert.strictEqual(await toast.getAttribute(\"textContent\"), `User successfully added, Hi ${userBaru}!`);\nawait driver.sleep(10000);\nlet logout = await driver.findElement(\n    By.id(\"logout-btn\")\n);\nawait logout.click();\n\n// Assert 6: kembali ke halaman login\nlet loginLagi = await driver.wait(\n    until.elementLocated(By.css('[data-testid=\"login-button\"]')),\n    10000\n);\n    assert.strictEqual(await loginLagi.isDisplayed(), true);\nawait driver.quit();",
+              "err": {},
+              "uuid": "6f53f904-018c-43cb-aec4-7174680159e3",
+              "parentUUID": "fe3ff8ad-882e-4af0-9626-94e42dfce606",
+              "isHook": false,
+              "skipped": false
+            }
+          ],
+          "suites": [],
+          "passes": [
+            "6f53f904-018c-43cb-aec4-7174680159e3"
+          ],
+          "failures": [],
+          "pending": [],
+          "skipped": [],
+          "duration": 31315,
+          "root": false,
+          "rootEmpty": false,
+          "_timeout": 2000
+        }
+      ],
+      "passes": [],
+      "failures": [],
+      "pending": [],
+      "skipped": [],
+      "duration": 0,
+      "root": true,
+      "rootEmpty": true,
+      "_timeout": 2000
+    }
+  ],
+  "meta": {
+    "mocha": {
+      "version": "11.8.0"
+    },
+    "mochawesome": {
+      "options": {
+        "quiet": false,
+        "reportFilename": "mochawesome",
+        "saveHtml": true,
+        "saveJson": true,
+        "consoleReporter": "spec",
+        "useInlineDiffs": false,
+        "code": true
+      },
+      "version": "8.1.1"
+    },
+    "marge": {
+      "options": null,
+      "version": "6.3.2"
+    }
+  }
+}
