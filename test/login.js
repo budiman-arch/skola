@@ -173,18 +173,4 @@ describe("Belajar Bareng", function () {
         // Assert 3: tetap di halaman login
         assert.strictEqual(await driver.findElement(By.css('[data-testid="login-button"]')).isDisplayed(), true);
     });
-
-        // await driver.sleep(10000);
-
-        // let logout = await driver.findElement(
-        //     By.id("logout-btn")
-        // );
-        // await logout.click();
-        
-        // Assert 6: kembali ke halaman login
-        // let loginLagi = await driver.wait(
-        //     until.elementLocated(By.css('[data-testid="login-button"]')),
-        //     10000
-        // );
-        //     assert.strictEqual(await loginLagi.isDisplayed(), true);
 });
