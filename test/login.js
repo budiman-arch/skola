@@ -1,31 +1,61 @@
 const { Builder, By, until } = require("selenium-webdriver");
 const assert = require("assert");
 const chrome = require("selenium-webdriver/chrome");
+const { beforeEach, before, afterEach } = require("mocha");
 
 describe("Belajar Bareng", function () {
-    it("Should login and display List Users", async function () {
+    let driver;
+    
         this.timeout(90000); // Set timeout to 90 seconds
-        // Handle popup password manager
-        let options = new chrome.Options();
+    
+    // Hook 1 : buka browser sekali diawal
+    before(async function () {
+        const options = new chrome.Options()
+        options.excludeSwitches("enable-logging");
+        options.addArguments("--log-level=3");
+        options.addArguments("--headless")
 
-        options.addArguments("--disable-features=PasswordLeakDetection");
-
-        options.setUserPreferences({
-            "credentials_enable_service": false,
-            "profile.password_manager_enabled": false,
-            "profile.password_manager_leak_detection": false
-        });
-
-        let driver = await new Builder()
+        driver = await new Builder()
             .forBrowser("chrome")
             .setChromeOptions(options)
             .build();
 
-        await driver.manage().window().maximize();
+        // await driver.manage().window().maximize();
 
+    });
+
+    // Hook 2: setiap skenario, buka halaman login
+    beforeEach(async function () {
+        // console.log("Test Login & Add User Completed");
         await driver.get("https://belajar-bareng.onrender.com");
-        await driver.sleep(10000);
+        await driver.wait(
+            until.elementLocated(By.css('[data-testid="username-input"]')),
+            30000
+        );
+    });
 
+    // Hook 3 : selesai tiap skenario, handle alert
+    afterEach(async function () {
+        // console.log("Test Login");
+        try {
+            await driver.switchTo().alert().accept();
+        } catch (e) {
+            // tidak ada alert, lanjut
+        }
+    });
+
+    // Hook 4 : tutup browser setelah semua test selesai
+    after(async function () {
+        if (driver) {
+            await driver.manage().deleteAllCookies();
+            await driver.quit();
+            console.log("Closed")
+        }
+        
+    })
+
+    // Test Pertama
+    it ("Login berhasil dengan username dan password benar", async function () {
         let usernameInput = await driver.findElement(
             By.css('[data-testid="username-input"]')
         );
@@ -41,7 +71,7 @@ describe("Belajar Bareng", function () {
         await loginButton.click();
 
         // Assert 1: Ambil List User
-        let Text = await driver.wait(
+        let text = await driver.wait(
             until.elementLocated(
                 By.xpath('//h2[text()="List Users"]')
             ),
@@ -56,69 +86,105 @@ describe("Belajar Bareng", function () {
         );
 
         // Assert 2: Nyocokin Tittle
-        let text = await driver.findElement(
+        let contains = await driver.findElement(
             By.xpath('//h2[text()="List Users"]')
         );
-        assert.strictEqual(await text.getText(), "List Users");
+        assert.strictEqual(await contains.getText(), "List Users");
+    });
 
-        await driver.sleep(3000);
-
-        let addUser = await driver.findElement(
-            By.css('[data-testid="add-button"]')
-        );
-            await addUser.click();
-
-        // Assert 2: Nyocokin Tittle
-        let contains = await driver.findElement(
-            By.css('.container h2')
-        );
-        assert.strictEqual(await contains.getText(), "Add Users");
-
-        let usernameAdd = await driver.findElement(
+    // Test Kedua
+    it("Login gagal dengan password salah", async function () {
+        let usernameInput = await driver.findElement(
             By.css('[data-testid="username-input"]')
         );
-        let ageInput = await driver.findElement(
-            By.css('[data-testid="age-input"]')
+        let passwordInput = await driver.findElement(
+            By.css('[data-testid="password-input"]')
         );
-        let submitButton = await driver.findElement(
-            By.css('[data-testid="submit-button"]')
+        let loginButton = await driver.findElement(
+            By.css('[data-testid="login-button"]')
         );
 
-        const userBaru = "TestA";
+        await usernameInput.sendKeys("admin");
+        await passwordInput.sendKeys("admin1");
+        await loginButton.click();
 
-        await usernameAdd.sendKeys(userBaru);
-        await ageInput.sendKeys("99");
-        await submitButton.click();
+        // Tutup alert jika muncul
+        try {
+        await driver.wait(until.alertIsPresent(), 3000);
+        await driver.switchTo().alert().accept();
+        } catch (e) {
+            // tidak ada alert
+        }
+
+        // Assert 1: halaman list user tidak muncul
+        let listUsers = await driver.findElements(
+            By.xpath('//h2[text()="List Users"]')
+        );
+        assert.strictEqual(listUsers.length, 0);
+
+        // Assert 2: Nyocokin Tittle
+        let loginButton2 = await driver.findElement(
+            By.css('[data-testid="login-button"]'));
+        assert.strictEqual(await loginButton2.isDisplayed(), true);   // tetap di halaman login
+    });
+
+    // Test ketiga
+    it("Login gagal dengan username salah", async function () {
+        await driver.findElement(By.css('[data-testid="username-input"]')).sendKeys("userxyz");
+        await driver.findElement(By.css('[data-testid="password-input"]')).sendKeys("admin");
+        await driver.findElement(By.css('[data-testid="login-button"]')).click();
+
+        await driver.sleep(2000);
+        try { await driver.switchTo().alert().accept(); } catch (e) {}
+
+        // Assert 1: halaman list user tidak muncul
+        let listUsers = await driver.findElements(By.xpath('//h2[text()="List Users"]'));
+        assert.strictEqual(listUsers.length, 0);
+
+        // Assert 2: Nyocokin Tittle
+        let loginButton = await driver.findElement(By.css('[data-testid="login-button"]'));
+        assert.strictEqual(await loginButton.isDisplayed(), true);
+    });
+    
+    // Test keempat
+    it("Login gagal dengan username dan password kosong", async function () {
+        let usernameInput = await driver.findElement(
+            By.css('[data-testid="username-input"]')
+        );
+        let passwordInput = await driver.findElement(
+            By.css('[data-testid="password-input"]')
+        );
+        let loginButton = await driver.findElement(
+            By.css('[data-testid="login-button"]')
+        );
+
+        await usernameInput.sendKeys("");
+        await passwordInput.sendKeys("");
+        await loginButton.click();
+
+        // Assert 1: muncul pesan validasi di field username
+        let pesan = await driver.executeScript("return arguments[0].validationMessage;", usernameInput);
+        assert.strictEqual(pesan, "Please fill out this field.");
+
+        // Assert 2: status field = kosong padahal wajib
+        let kosong = await driver.executeScript("return arguments[0].validity.valueMissing;", usernameInput);
+        assert.strictEqual(kosong, true);
+
+        // Assert 3: tetap di halaman login
+        assert.strictEqual(await driver.findElement(By.css('[data-testid="login-button"]')).isDisplayed(), true);
+    });
 
         // await driver.sleep(10000);
 
-        // Assert 2: Nyocokin Nama
-        let toast = await driver.wait(
-            until.elementLocated(By.css('[data-testid="toast-content"]')
-        ),
-        10000
-    );
-        await driver.wait(until.elementIsVisible(toast), 20000);
-        // Cek 1: toast tampil
-        assert.strictEqual(await toast.isDisplayed(), true);
-
-        // Cek 2: isi toast sesuai nama
-        assert.strictEqual(await toast.getAttribute("textContent"), `User successfully added, Hi ${userBaru}!`);
-
-        await driver.sleep(10000);
-
-        let logout = await driver.findElement(
-            By.id("logout-btn")
-        );
-        await logout.click();
+        // let logout = await driver.findElement(
+        //     By.id("logout-btn")
+        // );
+        // await logout.click();
         
         // Assert 6: kembali ke halaman login
-        let loginLagi = await driver.wait(
-            until.elementLocated(By.css('[data-testid="login-button"]')),
-            10000
-        );
-            assert.strictEqual(await loginLagi.isDisplayed(), true);
-
-        await driver.quit();
-    })
+        // let loginLagi = await driver.wait(
+        //     until.elementLocated(By.css('[data-testid="login-button"]')),
+        //     10000
+        // );
+        //     assert.strictEqual(await loginLagi.isDisplayed(), true);
 });
